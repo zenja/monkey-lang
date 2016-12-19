@@ -314,10 +314,11 @@ func (p *Parser) parseFunctionLiteral() ast.Expression {
 		return nil
 	}
 
-	p.nextToken()
-
-	// parse parameters
 	lit.Parameters = p.parseFunctionParameters()
+
+	if !p.expectPeek(token.LBRACE) {
+		return nil
+	}
 
 	lit.Body = p.parseBlockStatement()
 
@@ -325,28 +326,30 @@ func (p *Parser) parseFunctionLiteral() ast.Expression {
 }
 
 func (p *Parser) parseFunctionParameters() []*ast.Identifier {
-	idents := []*ast.Identifier{}
+	identifiers := []*ast.Identifier{}
 
 	if p.peekTokenIs(token.RPAREN) {
 		p.nextToken()
-		return idents
+		return identifiers
 	}
 
+	p.nextToken()
+
 	ident := &ast.Identifier{Token: p.curToken, Value: p.curToken.Literal}
-	idents = append(idents, ident)
+	identifiers = append(identifiers, ident)
 
 	for p.peekTokenIs(token.COMMA) {
 		p.nextToken()
 		p.nextToken()
 		ident := &ast.Identifier{Token: p.curToken, Value: p.curToken.Literal}
-		idents = append(idents, ident)
+		identifiers = append(identifiers, ident)
 	}
 
 	if !p.expectPeek(token.RPAREN) {
 		return nil
 	}
 
-	return idents
+	return identifiers
 }
 
 func (p *Parser) parseInfixExpression(left ast.Expression) ast.Expression {
