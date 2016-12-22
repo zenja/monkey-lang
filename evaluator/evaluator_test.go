@@ -50,7 +50,7 @@ func testIntegerObject(t *testing.T, obj object.Object, expected int64) bool {
 		t.Errorf("object is not Integer. got=%T (%+v)", obj, obj)
 	}
 	if result.Value != expected {
-		t.Errorf("onject has wrong value. got=%d, eant=%d", result.Value, expected)
+		t.Errorf("onject has wrong value. got=%d, want=%d", result.Value, expected)
 		return false
 	}
 
@@ -95,7 +95,7 @@ func testBooleanObject(t *testing.T, obj object.Object, expected bool) bool {
 		t.Errorf("object is not Boolean. got=%T (%+v)", obj, obj)
 	}
 	if result.Value != expected {
-		t.Errorf("onject has wrong value. got=%t, eant=%t", result.Value, expected)
+		t.Errorf("onject has wrong value. got=%t, want=%t", result.Value, expected)
 		return false
 	}
 
@@ -148,4 +148,33 @@ func TestIfElseExpressions(t *testing.T) {
 
 func testNullObject(t *testing.T, obj object.Object) bool {
 	return obj == NULL
+}
+
+func TestReturnStatements(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected int64
+	}{
+		{"return 10;", 10},
+		{"return 10; 9;", 10},
+		{"return 2 * 5; 9;", 10},
+		{"9; return 2 * 5; 9;", 10},
+		{
+			`
+	if (10 > 1) {
+		if (10 > 1) {
+			return 10;
+		}
+
+		return 1;
+	}
+	    `,
+			10,
+		},
+	}
+
+	for _, tt := range tests {
+		evaluated := testEval(tt.input)
+		testIntegerObject(t, evaluated, tt.expected)
+	}
 }
