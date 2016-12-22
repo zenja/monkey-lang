@@ -173,7 +173,7 @@ func (p *Parser) parseReturnStatement() *ast.ReturnStatement {
 }
 
 func (p *Parser) parseExpressionStatement() *ast.ExpressionStatement {
-	defer untrace(trace("parseExpressionStatement"))
+	//defer untrace(trace("parseExpressionStatement"))
 
 	stmt := &ast.ExpressionStatement{Token: p.curToken}
 	stmt.Expression = p.parseExpression(LOWEST)
@@ -190,7 +190,7 @@ func (p *Parser) noPrefixParseFnError(t token.TokenType) {
 
 // parseExpression() is really *INTERESTING*
 func (p *Parser) parseExpression(precedence int) ast.Expression {
-	defer untrace(trace("parseExpression"))
+	//defer untrace(trace("parseExpression"))
 
 	prefix := p.prefixParseFns[p.curToken.Type]
 	if prefix == nil {
@@ -236,7 +236,7 @@ func (p *Parser) parseBoolean() ast.Expression {
 }
 
 func (p *Parser) parsePrefixExpression() ast.Expression {
-	defer untrace(trace("parsePrefixExpression"))
+	//defer untrace(trace("parsePrefixExpression"))
 
 	expression := &ast.PrefixExpression{
 		Token:    p.curToken,
@@ -358,7 +358,7 @@ func (p *Parser) parseFunctionParameters() []*ast.Identifier {
 }
 
 func (p *Parser) parseInfixExpression(left ast.Expression) ast.Expression {
-	defer untrace(trace("parseInfixExpression"))
+	//defer untrace(trace("parseInfixExpression"))
 
 	expression := &ast.InfixExpression{
 		Token:    p.curToken,
