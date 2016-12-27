@@ -1,6 +1,12 @@
 package object
 
-import "fmt"
+import (
+	"fmt"
+
+	"bytes"
+	"github.com/zenja/monkey-lang/ast"
+	"strings"
+)
 
 type ObjectType string
 
@@ -9,27 +15,38 @@ const (
 	BOOLEAN_OBJ      = "BOOLEAN"
 	NULL_OBJ         = "NULL"
 	RETURN_VALUE_OBJ = "RETURN_VALUE"
+	FUNCTION_OBJ     = "FUNCTION"
 	ERROR_OBJ        = "ERROR"
 )
 
 // --------- Environment ---------
 
 func NewEnvironment() *Environment {
-	return &Environment{store: make(map[string]Object)}
+	return &Environment{store: make(map[string]Object), outer: nil}
 }
 
 type Environment struct {
 	store map[string]Object
+	outer *Environment
 }
 
 func (e *Environment) Get(name string) (Object, bool) {
 	obj, ok := e.store[name]
+	if !ok && e.outer != nil {
+		obj, ok = e.outer.Get(name)
+	}
 	return obj, ok
 }
 
 func (e *Environment) Set(name string, obj Object) Object {
 	e.store[name] = obj
 	return obj
+}
+
+func NewEnclosedEnvironment(outer *Environment) *Environment {
+	env := NewEnvironment()
+	env.outer = outer
+	return env
 }
 
 // --------- Object Interface ---------
@@ -79,7 +96,7 @@ func (n *Null) Inspect() string {
 	return "null"
 }
 
-// --------- Null ---------
+// --------- Return Value ---------
 
 type ReturnValue struct {
 	Value Object
@@ -91,6 +108,36 @@ func (rv *ReturnValue) Type() ObjectType {
 
 func (rv *ReturnValue) Inspect() string {
 	return rv.Value.Inspect()
+}
+
+// --------- Function ---------
+
+type Function struct {
+	Parameters []*ast.Identifier
+	Body       *ast.BlockStatement
+	Env        *Environment
+}
+
+func (f *Function) Type() ObjectType {
+	return FUNCTION_OBJ
+}
+
+func (f *Function) Inspect() string {
+	var out bytes.Buffer
+
+	params := []string{}
+	for _, p := range f.Parameters {
+		params = append(params, p.String())
+	}
+
+	out.WriteString("fn")
+	out.WriteString("(")
+	out.WriteString(strings.Join(params, ", "))
+	out.WriteString(") {\n")
+	out.WriteString(f.Body.String())
+	out.WriteString("\n}")
+
+	return out.String()
 }
 
 // --------- Error ---------
